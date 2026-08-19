@@ -1,18 +1,25 @@
 {
-  "name": "CuniGestão PRO - Cunicultura",
+  "name": "CuniGestão PRO",
   "short_name": "CuniGestão",
-  "description": "Sistema de gestão inteligente para cunicultura brasileira. 100% Offline.",
+  "description": "Sistema de gestão para cunicultura.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#166534",
   "theme_color": "#15803d",
-  "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23166534'/%3E%3Cellipse cx='256' cy='330' rx='110' ry='120' fill='white'/%3E%3Ccircle cx='216' cy='280' r='18' fill='%23166534'/%3E%3Ccircle cx='296' cy='280' r='18' fill='%23166534'/%3E%3Cellipse cx='256' cy='345' rx='18' ry='12' fill='%23fca5a5'/%3E%3Cpath d='M196 220 Q186 110 224 148 Q242 90 248 200' fill='white' stroke='white' stroke-width='8' stroke-linejoin='round'/%3E%3Cpath d='M316 220 Q326 110 288 148 Q270 90 264 200' fill='white' stroke='white' stroke-width='8' stroke-linejoin='round'/%3E%3C/svg%3E",
+      "src": "https://placehold.co/192x192/166534/ffffff/png?text=Cuni",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://placehold.co/512x512/166534/ffffff/png?text=Cuni",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
