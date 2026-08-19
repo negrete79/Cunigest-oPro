@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#15803d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>CuniGestão PRO</title>
+    
+    <!-- CHAMADA DO MANIFESTO REAL -->
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            --primary: #15803d; --primary-dark: #166534; --primary-light: #bbf7d0;
+            --accent: #ea580c; --bg-main: #f1f5f9; --bg-card: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0;
+            --danger: #dc2626; --warning: #d97706; --info: #0284c7;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 80px; }
+        .header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; padding: 16px; position: sticky; top: 0; z-index: 50; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .card { background: var(--bg-card); border-radius: 12px; padding: 16px; margin: 16px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1); border: 1px solid var(--border); }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px; }
+        .stat-box { background: var(--bg-card); padding: 16px; border-radius: 12px; border-left: 4px solid var(--primary); box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        .stat-number { font-size: 1.8rem; font-weight: 800; color: var(--primary-dark); }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+        .form-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; background: #f8fafc; transition: border-color 0.2s; }
+        .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 24px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; width: 100%; }
+        .btn-primary { background: var(--primary); color: white; } .btn-primary:hover { background: var(--primary-dark); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-secondary { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); }
+        .alert-box { padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 8px; border-left: 4px solid; }
+        .alert-danger { background: #fef2f2; color: #991b1b; border-color: #f87171; animation: pulse 2s infinite; }
+        .alert-warning { background: #fffbeb; color: #92400e; border-color: #fbbf24; }
+        .alert-info { background: #f0f9ff; color: #075985; border-color: #38bdf8; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0; z-index: 50; box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; padding: 4px 12px; border-radius: 8px; transition: 0.2s; }
+        .nav-item.active { color: var(--primary); font-weight: 700; }
+        .nav-icon { font-size: 1.5rem; margin-bottom: 2px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: none; place-items: center; padding: 16px; }
+        .modal-content { background: white; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 24px; position: relative; }
+        .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .list-item:last-child { border-bottom: none; }
+        .tag { padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .tag-success { background: #dcfce7; color: #166534; } .tag-warning { background: #fef3c7; color: #92400e; }
+        .guide-section { background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .guide-title { font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; }
+        .page { display: none; } .page.active { display: block; }
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        .data-table th, .data-table td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
+        .data-table th { color: var(--text-muted); font-weight: 600; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .alarm-modal { position: fixed; inset: 0; background: #dc2626; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 32px; }
+        .alarm-modal h1 { font-size: 3rem; margin-bottom: 16px; animation: shake 0.5s infinite; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+        .btn-stop-alarm { background: white; color: #dc2626; font-size: 1.5rem; font-weight: 800; padding: 20px 40px; border-radius: 50px; border: none; margin-top: 40px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); cursor: pointer;}
+    </style>
+</head>
+<body>
+
+    <div id="alarm-screen" class="alarm-modal">
+        <h1>⚠️ ALARME ⚠️</h1>
+        <h2 id="alarm-title">HORA DO MEDICAMENTO</h2>
+        <p style="font-size: 1.2rem; margin-top: 10px;" id="alarm-desc"></p>
+        <button class="btn-stop-alarm" onclick="pararAlarme()">DESATIVAR ALARME</button>
+    </div>
+
+    <div class="header"><h1>🐰 CuniGestão PRO</h1></div>
+
+    <div id="page-dashboard" class="page active fade-in">
+        <div class="stats-grid">
+            <div class="stat-box"><div class="stat-number" id="stat-matrizes">0</div><div class="stat-label">Matrizes Ativas</div></div>
+            <div class="stat-box" style="border-color: var(--info);"><div class="stat-number" id="stat-machos" style="color: var(--info);">0</div><div class="stat-label">Machos Reprodutores</div></div>
+            <div class="stat-box" style="border-color: var(--warning);"><div class="stat-number" id="stat-engorda" style="color: var(--warning);">0</div><div class="stat-label">Em Engorda</div></div>
+            <div class="stat-box" style="border-color: var(--accent);"><div class="stat-number" id="stat-ninhadas" style="color: var(--accent);">0</div><div class="stat-label">Ninhadas Ativas</div></div>
+        </div>
+        <div class="card">
+            <div class="card-title">⚠️ Alertas Críticos do Dia</div>
+            <div id="alertas-container"><div class="alert-box alert-info">Nenhum alerta no momento.</div></div>
+        </div>
+    </div>
+
+    <div id="page-reproducao" class="page fade-in">
+        <div class="card">
+            <div class="card-title">🐇 Cadastro de Animal</div>
+            <form id="form-animal">
+                <div class="form-group"><label class="form-label">Identificação</label><input type="text" id="animal-id" class="form-input" placeholder="Ex: M001" required></div>
+                <div class="form-group"><label class="form-label">Categoria</label><select id="animal-tipo" class="form-input" required><option value="">Selecione...</option><option value="Matriz">Matriz</option><option value="Macho">Macho</option></select></div>
+                <div class="form-group"><label class="form-label">Raça</label><select id="animal-raca" class="form-input" required><option value="">Selecione...</option><option>Nova Zelândia Branco</option><option>Californiano</option><option>Botucatu</option><option>Chinchila Americano</option><option>Rex</option><option>Mestiço/Cruza Comercial</option></select></div>
+                <div class="form-group"><label class="form-label">Data de Nascimento</label><input type="date" id="animal-nasc" class="form-input" required></div>
+                <button type="submit" class="btn btn-primary">Cadastrar Animal</button>
+            </form>
+        </div>
+        <div class="card"><div class="card-title">🐇 Animais Cadastrados</div><div id="lista-animais" style="max-height: 300px; overflow-y: auto;"><p style="color: var(--text-muted); text-align: center; padding: 16px;">Nenhum animal.</p></div></div>
+        <div class="card">
+            <div class="card-title">❤️ Registro de Cobertura</div>
+            <form id="form-cobertura">
+                <div class="form-group"><label class="form-label">Matriz</label><select id="cob-matriz" class="form-input" required><option value="">Selecione...</option></select></div>
+                <div class="form-group"><label class="form-label">Macho</label><select id="cob-macho" class="form-input" required><option value="">Selecione...</option></select></div>
+                <div class="form-group"><label class="form-label">Data da Cobertura</label><input type="date" id="cob-data" class="form-input" required></div>
+                <button type="submit" class="btn btn-primary">Registrar e Calcular Datas</button>
+            </form>
+        </div>
+        <div class="card"><div class="card-title">📅 Agenda</div><div id="lista-coberturas"><p style="color: var(--text-muted); text-align: center; padding: 16px;">Nenhuma cobertura.</p></div></div>
+    </div>
+
+    <div id="page-saude" class="page fade-in">
+        <div class="card">
+            <div class="card-title">💊 Cadastro de Medicamento</div>
+            <form id="form-med">
+                <div class="form-group"><label class="form-label">Nome</label><input type="text" id="med-nome" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Lote</label><input type="text" id="med-lote" class="form-input"></div>
+                <div class="form-group"><label class="form-label">Validade</label><input type="date" id="med-val" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Carência (Dias)</label><input type="number" id="med-carencia" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Finalidade</label><select id="med-tipo" class="form-input"><option>Preventivo</option><option>Curativo</option></select></div>
+                <button type="submit" class="btn btn-primary">Adicionar</button>
+            </form>
+        </div>
+        <div class="card">
+            <div class="card-title">📝 Agendar Aplicação (Alarme)</div>
+            <form id="form-aplicacao">
+                <div class="form-group"><label class="form-label">Medicamento</label><select id="app-med" class="form-input" required><option value="">Selecione...</option></select></div>
+                <div class="form-group"><label class="form-label">Animal/Lote</label><input type="text" id="app-animal" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Data e Hora</label><input type="datetime-local" id="app-data" class="form-input" required></div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;"><input type="checkbox" id="app-repete"> <label for="app-repete" style="font-size: 0.875rem;">Repetir 12h por 3 dias</label></div>
+                <button type="submit" class="btn btn-primary">Agendar</button>
+            </form>
+        </div>
+        <div class="card"><div class="card-title">⚠️ Carência p/ Abate</div><div id="lista-carencia"><p style="color: var(--text-muted); text-align: center; padding: 16px;">Nenhum tratamento.</p></div></div>
+    </div>
+
+    <div id="page-nutricao" class="page fade-in">
+        <div class="card" style="border: 2px solid var(--info);">
+            <div class="card-title">📦 Estoque de Ração</div>
+            <form id="form-estoque-racao">
+                <div class="form-group"><label class="form-label">Adicionar Sacos (25kg cada)</label><input type="number" id="racao-sacos" class="form-input" min="1" required></div>
+                <button type="submit" class="btn btn-primary" style="background: var(--info);">Dar Entrada</button>
+            </form>
+            <div style="margin-top: 16px; background: #f0f9ff; padding: 16px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.9rem; color: var(--text-muted);">Estoque Atual</div>
+                <div style="font-size: 2.5rem; font-weight: 800; color: var(--info);" id="racao-estoque-atual">0.0 kg</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">🧮 Calculadora e Previsão</div>
+            <div class="form-group"><label class="form-label">Descanso/Machos (135g/dia)</label><input type="number" id="calc-descanso" class="form-input" value="0" min="0"></div>
+            <div class="form-group"><label class="form-label">Lactação (~350g/dia)</label><input type="number" id="calc-lactacao" class="form-input" value="0" min="0"></div>
+            <div class="form-group"><label class="form-label">Engorda (~200g/dia)</label><input type="number" id="calc-engorda" class="form-input" value="0" min="0"></div>
+            <button type="button" class="btn btn-primary" onclick="calcularRacao()">Calcular</button>
+            <div id="resultado-racao" style="margin-top: 20px; display: none;">
+                <div style="background: var(--primary-light); padding: 16px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: 800; color: var(--primary-dark);" id="total-racao-kg">0.0 kg</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;" id="detalhe-racao"></div>
+                </div>
+                <div id="alerta-estoque-racao" style="margin-top: 12px;"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">🌾 Guia de Fenos</div>
+            <div class="guide-section"><div class="guide-title">Coast-Cross / Tifton 85</div><p style="font-size: 0.9rem; color: var(--text-muted);">Indicado para TODAS as categorias diariamente.</p></div>
+            <div class="guide-section"><div class="guide-title">Alfafa</div><p style="font-size: 0.9rem; color: var(--text-muted);">Apenas lactantes e filhotes.</p><div class="alert-box alert-warning" style="margin-top: 8px;"><span>⚠️</span><span>Cálcio em excesso causa problemas renais em adultos.</span></div></div>
+            <div class="guide-section"><div class="guide-title">Brachiaria</div><div class="alert-box alert-danger" style="margin-top: 0;"><span>🚫</span><span>PROIBIDO. Causa impactação e morte.</span></div></div>
+        </div>
+    </div>
+
+    <div id="page-engorda" class="page fade-in">
+        <div class="card">
+            <div class="card-title">🐰 Lote de Engorda</div>
+            <form id="form-engorda">
+                <div class="form-group"><label class="form-label">ID do Lote</label><input type="text" id="eng-id" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Quantidade</label><input type="number" id="eng-qtd" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Raça</label><select id="eng-raca" class="form-input" required><option value="">Selecione...</option><option>Nova Zelândia Branco</option><option>Californiano</option><option>Botucatu</option><option>Mestiço</option></select></div>
+                <div class="form-group"><label class="form-label">Data Nascimento</label><input type="date" id="eng-nasc" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Peso Médio Inic. (kg)</label><input type="number" id="eng-peso" class="form-input" step="0.1" required></div>
+                <button type="submit" class="btn btn-primary">Criar Lote</button>
+            </form>
+        </div>
+        <div class="card"><div class="card-title">🐰 Lotes e Abate</div><div id="lista-engorda"><p style="color: var(--text-muted); text-align: center; padding: 16px;">Nenhum lote.</p></div></div>
+        <div class="card">
+            <div class="card-title">📈 Relatórios</div>
+            <button class="btn btn-secondary" style="margin-bottom: 12px;" onclick="gerarRelatorioMortalidade()">1. Mortalidade Maternidade</button>
+            <div id="relatorio-mortalidade" style="display:none; margin-bottom: 16px;"></div>
+            <button class="btn btn-secondary" style="margin-bottom: 12px;" onclick="gerarRelatorioCarencia()">2. Carência p/ Abate</button>
+            <div id="relatorio-carencia" style="display:none; margin-bottom: 16px;"></div>
+        </div>
+    </div>
+
+    <div id="modal-parto" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="fecharModal('modal-parto')">✕</button>
+            <h2 style="margin-bottom: 20px;">🎓 Registro de Parto</h2>
+            <form id="form-parto">
+                <input type="hidden" id="parto-cob-id">
+                <div class="form-group"><label class="form-label">Data Real</label><input type="date" id="parto-data" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Vivos</label><input type="number" id="parto-vivos" class="form-input" min="0" required></div>
+                <div class="form-group"><label class="form-label">Mortos</label><input type="number" id="parto-mortos" class="form-input" min="0" required></div>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="mudarPagina('dashboard', this)"><div class="nav-icon">🏠</div><span>Início</span></di
