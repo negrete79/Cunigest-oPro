@@ -3,30 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- Meta Tags Exatas para PWA Nativo -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="application-name" content="CuniGestão">
     <meta name="theme-color" content="#15803d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CuniGestão">
-    
     <title>CuniGestão PRO</title>
-    
-    <!-- Manifesto e Ícone Inline (Garante funcionamento 100% offline mesmo sem servidor) -->
     <script>
         const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="%23166534"/><ellipse cx="256" cy="330" rx="110" ry="120" fill="white"/><circle cx="216" cy="280" r="18" fill="%23166534"/><circle cx="296" cy="280" r="18" fill="%23166534"/><ellipse cx="256" cy="345" rx="18" ry="12" fill="%23fca5a5"/><path d="M196 220 Q186 110 224 148 Q242 90 248 200" fill="white" stroke="white" stroke-width="8" stroke-linejoin="round"/><path d="M316 220 Q326 110 288 148 Q270 90 264 200" fill="white" stroke="white" stroke-width="8" stroke-linejoin="round"/></svg>`;
         const iconData = 'data:image/svg+xml;base64,' + btoa(svgIcon);
-        
-        // Se existir um manifesto externo, usa ele. Se não, cria um perfeito em memória.
         if (!document.querySelector('link[rel="manifest"]')) {
             const m = { name: "CuniGestão PRO", short_name: "CuniGestão", start_url: "./index.html", scope: "./", display: "standalone", background_color: "#166534", theme_color: "#15803d", icons: [{ src: iconData, sizes: "512x512", type: "image/svg+xml", purpose: "any" }] };
             const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(new Blob([JSON.stringify(m)], {type: 'application/json'})); document.head.appendChild(link);
         }
         const appleLink = document.createElement('link'); appleLink.rel = 'apple-touch-icon'; appleLink.href = iconData; document.head.appendChild(appleLink);
     </script>
-
     <style>
         :root { --primary: #15803d; --primary-dark: #166534; --primary-light: #bbf7d0; --accent: #ea580c; --bg-main: #f1f5f9; --bg-card: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --danger: #dc2626; --warning: #d97706; --info: #0284c7; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -48,6 +39,10 @@
         .btn-danger { background: var(--danger); color: white; }
         .btn-secondary { background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); }
         .btn-pdf { background: var(--danger); color: white; margin-top: 12px; }
+        .btn-group { display: flex; gap: 8px; margin-top: 8px; }
+        .btn-sm { padding: 8px 12px; font-size: 0.85rem; width: auto; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-edit { background: var(--info); color: white; }
+        .btn-del { background: var(--danger); color: white; }
         .alert-box { padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 8px; border-left: 4px solid; }
         .alert-danger { background: #fef2f2; color: #991b1b; border-color: #f87171; animation: pulse 2s infinite; }
         .alert-warning { background: #fffbeb; color: #92400e; border-color: #fbbf24; }
@@ -76,8 +71,8 @@
         .alarm-modal h1 { font-size: 3rem; margin-bottom: 16px; animation: shake 0.5s infinite; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .btn-stop-alarm { background: white; color: #dc2626; font-size: 1.5rem; font-weight: 800; padding: 20px 40px; border-radius: 50px; border: none; margin-top: 40px; cursor: pointer;}
-        .pdf-content { background: white; padding: 20px; color: black; font-size: 12px; }
-        .pdf-content h2 { color: #166534; margin-bottom: 10px; border-bottom: 2px solid #166534; padding-bottom: 5px; }
+        .pdf-content { background: white; padding: 20px; color: black; font-size: 12px; font-family: Arial, sans-serif; }
+        .pdf-content h2 { color: #166534; margin: 20px 0 10px 0; border-bottom: 2px solid #166534; padding-bottom: 5px; }
         .pdf-content table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .pdf-content th, .pdf-content td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         .pdf-content th { background-color: #f1f5f9; }
@@ -89,6 +84,18 @@
         <h2 id="alarm-title">HORA DO MEDICAMENTO</h2>
         <p style="font-size: 1.2rem; margin-top: 10px;" id="alarm-desc"></p>
         <button class="btn-stop-alarm" onclick="pararAlarme()">DESATIVAR ALARME</button>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO -->
+    <div id="modal-confirm" class="modal-overlay" style="z-index: 200;">
+        <div class="modal-content" style="max-width: 350px; text-align: center;">
+            <h2 style="color: var(--danger); margin-bottom: 15px;">⚠️ Confirmar Exclusão</h2>
+            <p id="confirm-msg" style="margin-bottom: 25px; color: var(--text-muted);">Tem certeza que deseja excluir este item? Ação irreversível.</p>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" onclick="fecharModal('modal-confirm')" style="flex:1;">Cancelar</button>
+                <button class="btn btn-danger" id="btn-confirm-yes" style="flex:1;">Sim, Excluir</button>
+            </div>
+        </div>
     </div>
 
     <div class="header"><h1>🐰 CuniGestão PRO</h1></div>
@@ -107,6 +114,7 @@
         <div class="card">
             <div class="card-title">🐇 Cadastro de Animal</div>
             <form id="form-animal">
+                <input type="hidden" id="animal-edit-id" value="">
                 <div class="form-group"><label class="form-label">Identificação</label><input type="text" id="animal-id" class="form-input" placeholder="Ex: M001" required></div>
                 <div class="form-group"><label class="form-label">Categoria</label><select id="animal-tipo" class="form-input" required><option value="">Selecione...</option><option value="Matriz">Matriz</option><option value="Macho">Macho</option></select></div>
                 <div class="form-group"><label class="form-label">Raça</label><select id="animal-raca" class="form-input" required><option value="">Selecione...</option><option>Nova Zelândia Branco</option><option>Californiano</option><option>Botucatu</option><option>Chinchila Americano</option><option>Rex</option><option>Mestiço/Cruza Comercial</option></select></div>
@@ -131,12 +139,13 @@
         <div class="card">
             <div class="card-title">💊 Medicamento</div>
             <form id="form-med">
+                <input type="hidden" id="med-edit-id" value="">
                 <div class="form-group"><label class="form-label">Nome</label><input type="text" id="med-nome" class="form-input" required></div>
                 <div class="form-group"><label class="form-label">Lote</label><input type="text" id="med-lote" class="form-input"></div>
                 <div class="form-group"><label class="form-label">Validade</label><input type="date" id="med-val" class="form-input" required></div>
                 <div class="form-group"><label class="form-label">Carência (Dias)</label><input type="number" id="med-carencia" class="form-input" required></div>
                 <div class="form-group"><label class="form-label">Finalidade</label><select id="med-tipo" class="form-input"><option>Preventivo</option><option>Curativo</option></select></div>
-                <button type="submit" class="btn btn-primary">Adicionar</button>
+                <button type="submit" class="btn btn-primary">Salvar Medicamento</button>
             </form>
         </div>
         <div class="card">
@@ -152,7 +161,6 @@
         <div class="card">
             <div class="card-title">⚠️ Carência p/ Abate</div>
             <div id="lista-carencia"><p style="color: var(--text-muted); text-align: center; padding: 16px;">Nenhum tratamento.</p></div>
-            <button class="btn btn-pdf" onclick="gerarPDFCarencia()">📄 Salvar Relatório de Carência em PDF</button>
         </div>
     </div>
 
@@ -170,10 +178,12 @@
         </div>
         <div class="card">
             <div class="card-title">🧮 Calculadora e Previsão</div>
-            <div class="form-group"><label class="form-label">Descanso/Machos (135g/dia)</label><input type="number" id="calc-descanso" class="form-input" value="0" min="0"></div>
-            <div class="form-group"><label class="form-label">Lactação (~350g/dia)</label><input type="number" id="calc-lactacao" class="form-input" value="0" min="0"></div>
-            <div class="form-group"><label class="form-label">Engorda (~200g/dia)</label><input type="number" id="calc-engorda" class="form-input" value="0" min="0"></div>
-            <button type="button" class="btn btn-primary" onclick="calcularRacao()">Calcular</button>
+            <form id="form-calc-racao" onsubmit="event.preventDefault(); calcularRacao();">
+                <div class="form-group"><label class="form-label">Descanso/Machos (135g/dia)</label><input type="number" id="calc-descanso" class="form-input" value="0" min="0"></div>
+                <div class="form-group"><label class="form-label">Lactação (~350g/dia)</label><input type="number" id="calc-lactacao" class="form-input" value="0" min="0"></div>
+                <div class="form-group"><label class="form-label">Engorda (~200g/dia)</label><input type="number" id="calc-engorda" class="form-input" value="0" min="0"></div>
+                <button type="submit" class="btn btn-primary">Calcular</button>
+            </form>
             <div id="resultado-racao" style="margin-top: 20px; display: none;">
                 <div style="background: var(--primary-light); padding: 16px; border-radius: 8px; text-align: center;">
                     <div style="font-size: 2rem; font-weight: 800; color: var(--primary-dark);" id="total-racao-kg">0.0 kg</div>
@@ -183,10 +193,19 @@
             </div>
         </div>
         <div class="card">
-            <div class="card-title">🌾 Guia de Fenos</div>
-            <div class="guide-section"><div class="guide-title">Coast-Cross / Tifton 85</div><p style="font-size: 0.9rem; color: var(--text-muted);">Indicado para TODAS as categorias.</p></div>
-            <div class="guide-section"><div class="guide-title">Alfafa</div><p style="font-size: 0.9rem; color: var(--text-muted);">Apenas lactantes e filhotes.</p><div class="alert-box alert-warning" style="margin-top: 8px;"><span>⚠️</span><span>Cálcio em excesso causa problemas renais.</span></div></div>
-            <div class="guide-section"><div class="guide-title">Brachiaria</div><div class="alert-box alert-danger" style="margin-top: 0;"><span>🚫</span><span>PROIBIDO. Causa impactação.</span></div></div>
+            <div class="card-title">🌾 Guia de Fenos e Capins</div>
+            
+            <div class="guide-section"><div class="guide-title">Coast-Cross e Tifton 85</div><p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Indicação:</strong> Fonte principal de fibra diária para TODAS as categorias. Digestibilidade excelente.</p></div>
+            
+            <div class="guide-section"><div class="guide-title">Alfafa</div><p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Indicação:</strong> Estritamente fêmeas lactantes e filhotes em crescimento (rica em proteína).</p><div class="alert-box alert-warning" style="margin-top: 8px;"><span>⚠️</span><span><strong>ALERTA:</strong> Excesso para adultos causa cálculos renais por alto teor de cálcio.</span></div></div>
+
+            <div class="guide-section"><div class="guide-title">Colonião (Panicum maximum)</div><p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Benefícios:</strong> Excelente palatabilidade e digestibilidade. Produz bem no verão e seca rápido no inverno, facilitando o feno. Suporta muito bem o pastejo rotativo.</p></div>
+            
+            <div class="guide-section" style="border-left: 4px solid var(--warning);"><div class="guide-title">Braquiária (Brachiaria spp)</div><p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Como usar com segurança:</strong> Os talos são grossos. Deve ser picada em machines desintegradoras e fornecida apenas quando muito jovem (10 a 15 dias de rebrota). Nunca fornecer a planta velha.</p><div class="alert-box alert-danger" style="margin-top: 8px;"><span>🚫</span><span><strong>RESTRITO:</strong> Planta adulta com talos grossos causa impactação estomacal fatal.</span></div></div>
+
+            <div class="guide-section" style="border-left: 4px solid var(--info);"><div class="guide-title">Capim-Açu Verde (Pennisetum purpureum)</div><p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Benefícios:</strong> Altíssima produção de massa verde por hectare. Excelente para fazer silagem de alta qualidade. Ótimo para vacas leiteiras, mas para coelhos, deve ser usado apenas picado finamente no cocho.</p></div>
+
+            <div class="guide-section" style="border-left: 4px solid #7c3aed;"><div class="guide-title" style="color: #7c3aed;">Capim-Açu Roxo (Pennisetum purpureum cv. Roxo)</div><p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Benefícios:</strong> Teor de proteína ligeiramente maior que o verde. A cor roxa indica presença de antocianinas (antioxidantes). Excelente alternativa de baixo custo para secagem no inverno. Coelhos aceitam muito bem quando picado.</p></div>
         </div>
     </div>
 
@@ -194,12 +213,13 @@
         <div class="card">
             <div class="card-title">🐰 Lote de Engorda</div>
             <form id="form-engorda">
+                <input type="hidden" id="eng-edit-id" value="">
                 <div class="form-group"><label class="form-label">ID do Lote</label><input type="text" id="eng-id" class="form-input" required></div>
                 <div class="form-group"><label class="form-label">Quantidade</label><input type="number" id="eng-qtd" class="form-input" required></div>
                 <div class="form-group"><label class="form-label">Raça</label><select id="eng-raca" class="form-input" required><option value="">Selecione...</option><option>Nova Zelândia Branco</option><option>Californiano</option><option>Botucatu</option><option>Mestiço</option></select></div>
                 <div class="form-group"><label class="form-label">Data Nascimento</label><input type="date" id="eng-nasc" class="form-input" required></div>
                 <div class="form-group"><label class="form-label">Peso Inic. (kg)</label><input type="number" id="eng-peso" class="form-input" step="0.1" required></div>
-                <button type="submit" class="btn btn-primary">Criar Lote</button>
+                <button type="submit" class="btn btn-primary">Salvar Lote</button>
             </form>
         </div>
         <div class="card">
@@ -207,9 +227,8 @@
             <div id="lista-engorda"><p style="color: var(--text-muted); text-align: center; padding: 16px;">Nenhum lote.</p></div>
         </div>
         <div class="card">
-            <div class="card-title">📈 Relatórios em PDF</div>
-            <button class="btn btn-secondary" style="margin-bottom: 12px;" onclick="gerarPDFMortalidade()">1. Mortalidade Maternidade (PDF)</button>
-            <button class="btn btn-secondary" style="margin-bottom: 12px;" onclick="gerarPDFCarencia()">2. Carência p/ Abate (PDF)</button>
+            <div class="card-title">📈 Relatórios</div>
+            <button class="btn btn-secondary" style="margin-bottom: 12px;" onclick="gerarPDFGeral()">📄 Relatório Geral Completo (PDF)</button>
         </div>
     </div>
 
@@ -222,7 +241,7 @@
                 <div class="form-group"><label class="form-label">Data Real</label><input type="date" id="parto-data" class="form-input" required></div>
                 <div class="form-group"><label class="form-label">Vivos</label><input type="number" id="parto-vivos" class="form-input" min="0" required></div>
                 <div class="form-group"><label class="form-label">Mortos</label><input type="number" id="parto-mortos" class="form-input" min="0" required></div>
-                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="submit" class="btn btn-primary">Salvar Parto</button>
             </form>
         </div>
     </div>
@@ -236,35 +255,40 @@
     </nav>
 
     <script>
-        // --- BANCO DE DADOS LOCAL ---
+        // --- SISTEMA ---
         const DB = { get: k => JSON.parse(localStorage.getItem(`cunigestao_${k}`)) || null, set: (k, d) => localStorage.setItem(`cunigestao_${k}`, JSON.stringify(d)), init: k => { if(!DB.get(k)) DB.set(k, []); return DB.get(k); } };
         let animais = DB.init('animais'), coberturas = DB.init('coberturas'), medicamentos = DB.init('medicamentos'), aplicacoes = DB.init('aplicacoes'), lotesEngorda = DB.init('lotesEngorda'), estoqueRacao = DB.get('estoqueRacao') || 0;
+        let acaoConfirmar = null;
 
-        // --- SISTEMA DE ALARME ---
+        // --- MODAIS ---
+        function abrirModal(id) { document.getElementById(id).style.display = 'grid'; }
+        function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function pedirConfirmacao(msg, funcaoAcao) {
+            document.getElementById('confirm-msg').innerText = msg;
+            acaoConfirmar = funcaoAcao;
+            abrirModal('modal-confirm');
+        }
+        document.getElementById('btn-confirm-yes').addEventListener('click', function() {
+            if (acaoConfirmar) acaoConfirmar();
+            fecharModal('modal-confirm');
+            acaoConfirmar = null;
+        });
+
+        // --- ALARME ---
         let audioCtx = null, alarmInterval = null;
         function dispararAlarme(titulo, descricao) {
-            document.getElementById('alarm-title').innerText = titulo;
-            document.getElementById('alarm-desc').innerText = descricao;
-            document.getElementById('alarm-screen').style.display = 'flex';
+            document.getElementById('alarm-title').innerText = titulo; document.getElementById('alarm-desc').innerText = descricao; document.getElementById('alarm-screen').style.display = 'flex';
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const playBeep = () => { const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.type = 'square'; o.frequency.setValueAtTime(880, audioCtx.currentTime); g.gain.setValueAtTime(1, audioCtx.currentTime); o.start(audioCtx.currentTime); o.stop(audioCtx.currentTime + 0.4); };
-            playBeep(); alarmInterval = setInterval(playBeep, 800);
-            if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+            playBeep(); alarmInterval = setInterval(playBeep, 800); if (navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
         }
         window.pararAlarme = function() { document.getElementById('alarm-screen').style.display = 'none'; if (alarmInterval) clearInterval(alarmInterval); if (navigator.vibrate) navigator.vibrate(0); };
-        
-        function verificarAlarmes() {
-            const agora = new Date();
-            aplicacoes.forEach(app => { if (Math.abs(agora - new Date(app.dataHora)) < 60000 && !app.alertou) { app.alertou = true; DB.set('aplicacoes', aplicacoes); dispararAlarme('HORA DO MEDICAMENTO', `Aplicar ${app.medNome} no(a) ${app.animal}`); } });
-        }
+        function verificarAlarmes() { const agora = new Date(); aplicacoes.forEach(app => { if (Math.abs(agora - new Date(app.dataHora)) < 60000 && !app.alertou) { app.alertou = true; DB.set('aplicacoes', aplicacoes); dispararAlarme('HORA DO MEDICAMENTO', `Aplicar ${app.medNome} no(a) ${app.animal}`); } }); }
         setInterval(verificarAlarmes, 10000);
 
-        // --- NAVEGAÇÃO ---
-        function mudarPagina(p, el) {
-            document.querySelectorAll('.page').forEach(e => e.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-            document.getElementById(`page-${p}`).classList.add('active'); if(el) el.classList.add('active');
-            if(p === 'dashboard') atualizarDashboard(); if(p === 'reproducao') atualizarSelectsReproducao(); if(p === 'saude') atualizarSelectsSaude(); if(p === 'nutricao') atualizarEstoqueRacao(); if(p === 'engorda') atualizarListaEngorda();
-        }
+        // --- NAVEGAÇÃO E UTILS ---
+        function mudarPagina(p, el) { document.querySelectorAll('.page').forEach(e => e.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active')); document.getElementById(`page-${p}`).classList.add('active'); if(el) el.classList.add('active'); if(p === 'dashboard') atualizarDashboard(); if(p === 'reproducao') atualizarSelectsReproducao(); if(p === 'saude') atualizarSelectsSaude(); if(p === 'nutricao') atualizarEstoqueRacao(); if(p === 'engorda') atualizarListaEngorda(); }
         function formatDate(d) { if(!d) return '-'; let p = d.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; }
         function addDays(d, days) { let dt = new Date(d + 'T00:00:00'); dt.setDate(dt.getDate() + days); return dt.toISOString().split('T')[0]; }
         function hoje() { return new Date().toISOString().split('T')[0]; }
@@ -285,25 +309,102 @@
             c.innerHTML = a.length === 0 ? '<div class="alert-box alert-info">Nenhum alerta crítico para hoje.</div>' : a.map(x => `<div class="alert-box alert-${x.tipo}">${x.msg}</div>`).join('');
         }
 
-        // --- REPRODUÇÃO ---
+        // --- REPRODUÇÃO (COM EDITAR/EXCLUIR) ---
         function atualizarSelectsReproducao() {
             document.getElementById('cob-matriz').innerHTML = '<option value="">Selecione...</option>' + animais.filter(a => a.tipo === 'Matriz').map(a => `<option value="${a.id}">${a.identificacao}</option>`).join('');
             document.getElementById('cob-macho').innerHTML = '<option value="">Selecione...</option>' + animais.filter(a => a.tipo === 'Macho').map(a => `<option value="${a.id}">${a.identificacao}</option>`).join('');
             renderizarAnimais(); renderizarCoberturas();
         }
-        document.getElementById('form-animal').addEventListener('submit', function(e) { e.preventDefault(); animais.push({id:Date.now().toString(), identificacao:document.getElementById('animal-id').value.toUpperCase(), tipo:document.getElementById('animal-tipo').value, raca:document.getElementById('animal-raca').value, dataNasc:document.getElementById('animal-nasc').value}); DB.set('animais',animais); this.reset(); atualizarSelectsReproducao(); });
-        function renderizarAnimais() { const c = document.getElementById('lista-animais'); c.innerHTML = animais.length === 0 ? '<p style="color:var(--text-muted);text-align:center;padding:16px;">Nenhum animal.</p>' : animais.map(a => `<div class="list-item"><div><strong>${a.identificacao}</strong> <span class="tag ${a.tipo==='Matriz'?'tag-success':'tag-warning'}">${a.tipo}</span><br><small style="color:var(--text-muted)">${a.raca}</small></div><button class="btn-danger" style="padding:6px 12px;font-size:0.8rem;width:auto;" onclick="animais=animais.filter(x=>x.id!=='${a.id}');DB.set('animais',animais);atualizarSelectsReproducao()">X</button></div>`).join(''); }
+        
+        document.getElementById('form-animal').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('animal-edit-id').value;
+            const dados = { identificacao: document.getElementById('animal-id').value.toUpperCase(), tipo: document.getElementById('animal-tipo').value, raca: document.getElementById('animal-raca').value, dataNasc: document.getElementById('animal-nasc').value };
+            
+            if (editId) {
+                let idx = animais.findIndex(a => a.id === editId);
+                if (idx !== -1) { animais[idx] = { ...animais[idx], ...dados }; }
+                this.reset(); document.getElementById('animal-edit-id').value = '';
+                this.querySelector('button[type="submit"]').innerText = 'Cadastrar Animal';
+            } else {
+                dados.id = Date.now().toString();
+                animais.push(dados);
+                this.reset();
+            }
+            DB.set('animais', animais); atualizarSelectsReproducao();
+        });
+
+        function editarAnimal(id) {
+            const a = animais.find(x => x.id === id); if(!a) return;
+            document.getElementById('animal-edit-id').value = a.id;
+            document.getElementById('animal-id').value = a.identificacao;
+            document.getElementById('animal-tipo').value = a.tipo;
+            document.getElementById('animal-raca').value = a.raca;
+            document.getElementById('animal-nasc').value = a.dataNasc;
+            document.querySelector('#form-animal button[type="submit"]').innerText = 'Salvar Alterações';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function renderizarAnimais() { 
+            const c = document.getElementById('lista-animais'); 
+            c.innerHTML = animais.length === 0 ? '<p style="color:var(--text-muted);text-align:center;padding:16px;">Nenhum animal.</p>' : 
+            animais.map(a => `<div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 8px;"><div style="display:flex; justify-content:space-between; width:100%;"><strong>${a.identificacao}</strong><span class="tag ${a.tipo==='Matriz'?'tag-success':'tag-warning'}">${a.tipo}</span></div><small style="color:var(--text-muted)">${a.raca} | Nasc: ${formatDate(a.dataNasc)}</small><div class="btn-group"><button class="btn-sm btn-edit" onclick="editarAnimal('${a.id}')">✏️ Editar</button><button class="btn-sm btn-del" onclick="pedirConfirmacao('Excluir o animal ${a.identificacao}?', () => { animais=animais.filter(x=>x.id!=='${a.id}'); DB.set('animais',animais); atualizarSelectsReproducao(); })">🗑️ Excluir</button></div></div>`).join(''); 
+        }
         
         document.getElementById('form-cobertura').addEventListener('submit', function(e) { e.preventDefault(); const dc = document.getElementById('cob-data').value; coberturas.push({id:Date.now().toString(), matrizId:document.getElementById('cob-matriz').value, machoId:document.getElementById('cob-macho').value, dataCobertura:dc, dataPalpacao:addDays(dc,14), dataNinho:addDays(dc,28), dataPartoPrevista:addDays(dc,31), dataPartoReal:null, vivos:null, mortos:null, desmameRealizado:false}); DB.set('coberturas',coberturas); this.reset(); document.getElementById('cob-data').value=hoje(); renderizarCoberturas(); alert('Cobertura salva!'); });
-        function renderizarCoberturas() { const c = document.getElementById('lista-coberturas'); if(coberturas.length===0){c.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:16px;">Nenhuma.</p>';return;} c.innerHTML = coberturas.map(cob => { const n = (animais.find(a=>a.id===cob.matrizId)||{}).identificacao||'Excluída'; let s = cob.dataPartoReal ? `<span class="tag tag-success">Pariu (${cob.vivos}V / ${cob.mortos}M)</span><br><small style="color:var(--text-muted)">Desmame: ${formatDate(addDays(cob.dataPartoReal,35))}</small>` : `<span class="tag tag-warning">Gestando</span><ul style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);list-style:none;"><li>🔍 Palpação: ${formatDate(cob.dataPalpacao)}</li><li>🏠 Ninho: ${formatDate(cob.dataNinho)}</li><li>👶 Parto: ${formatDate(cob.dataPartoPrevista)}</li></ul><button class="btn btn-primary" style="padding:8px;font-size:0.8rem;margin-top:8px;" onclick="abrirModalParto('${cob.id}')">Registrar Parto</button>`; return `<div class="list-item" style="flex-direction:column;align-items:flex-start;"><strong>${n}</strong> (Cob: ${formatDate(cob.dataCobertura)})<div style="width:100%;margin-top:8px;">${s}</div></div>`; }).join(''); }
         
-        function abrirModalParto(id) { document.getElementById('parto-cob-id').value = id; document.getElementById('parto-data').value = hoje(); document.getElementById('modal-parto').style.display = 'grid'; }
-        function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+        function renderizarCoberturas() { 
+            const c = document.getElementById('lista-coberturas'); if(coberturas.length===0){c.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:16px;">Nenhuma.</p>';return;} 
+            c.innerHTML = coberturas.map(cob => { 
+                const n = (animais.find(a=>a.id===cob.matrizId)||{}).identificacao||'Excluída'; 
+                let s = cob.dataPartoReal ? `<span class="tag tag-success">Pariu (${cob.vivos}V / ${cob.mortos}M)</span><br><small style="color:var(--text-muted)">Desmame: ${formatDate(addDays(cob.dataPartoReal,35))}</small>` : `<span class="tag tag-warning">Gestando</span><ul style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);list-style:none;"><li>🔍 Palpação: ${formatDate(cob.dataPalpacao)}</li><li>🏠 Ninho: ${formatDate(cob.dataNinho)}</li><li>👶 Parto: ${formatDate(cob.dataPartoPrevista)}</li></ul><button class="btn btn-primary" style="padding:8px;font-size:0.8rem;margin-top:8px;width:auto;" onclick="abrirModalParto('${cob.id}')">Registrar Parto</button>`; 
+                return `<div class="list-item" style="flex-direction:column;align-items:flex-start;"><strong>${n}</strong> (Cob: ${formatDate(cob.dataCobertura)})<div style="width:100%;margin-top:8px;">${s}</div></div>`; 
+            }).join(''); 
+        }
+        
+        function abrirModalParto(id) { document.getElementById('parto-cob-id').value = id; document.getElementById('parto-data').value = hoje(); abrirModal('modal-parto'); }
         document.getElementById('form-parto').addEventListener('submit', function(e) { e.preventDefault(); let i = coberturas.findIndex(c=>c.id===document.getElementById('parto-cob-id').value); if(i!==-1){coberturas[i].dataPartoReal=document.getElementById('parto-data').value;coberturas[i].vivos=parseInt(document.getElementById('parto-vivos').value);coberturas[i].mortos=parseInt(document.getElementById('parto-mortos').value);DB.set('coberturas',coberturas);fecharModal('modal-parto');renderizarCoberturas();} });
 
-        // --- SAÚDE ---
-        function atualizarSelectsSaude() { document.getElementById('app-med').innerHTML = '<option value="">Selecione...</option>' + medicamentos.map(m => `<option value="${m.id}">${m.nome} (${m.carencia}d)</option>`).join(''); renderizarCarencia(); }
-        document.getElementById('form-med').addEventListener('submit', function(e) { e.preventDefault(); medicamentos.push({id:Date.now().toString(),nome:document.getElementById('med-nome').value,lote:document.getElementById('med-lote').value,validade:document.getElementById('med-val').value,carencia:parseInt(document.getElementById('med-carencia').value),tipo:document.getElementById('med-tipo').value}); DB.set('medicamentos',medicamentos); this.reset(); atualizarSelectsSaude(); });
+        // --- SAÚDE (COM EDITAR/EXCLUIR) ---
+        function atualizarSelectsSaude() { document.getElementById('app-med').innerHTML = '<option value="">Selecione...</option>' + medicamentos.map(m => `<option value="${m.id}">${m.nome} (${m.carencia}d)</option>`).join(''); renderizarCarencia(); renderizarMedicamentos(); }
+        
+        document.getElementById('form-med').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('med-edit-id').value;
+            const dados = { nome: document.getElementById('med-nome').value, lote: document.getElementById('med-lote').value, validade: document.getElementById('med-val').value, carencia: parseInt(document.getElementById('med-carencia').value), tipo: document.getElementById('med-tipo').value };
+            
+            if (editId) {
+                let idx = medicamentos.findIndex(m => m.id === editId);
+                if (idx !== -1) medicamentos[idx] = { ...medicamentos[idx], ...dados };
+                this.reset(); document.getElementById('med-edit-id').value = '';
+                this.querySelector('button[type="submit"]').innerText = 'Cadastrar Medicamento';
+            } else {
+                dados.id = Date.now().toString();
+                medicamentos.push(dados);
+                this.reset();
+            }
+            DB.set('medicamentos', medicamentos); atualizarSelectsSaude();
+        });
+
+        function editarMed(id) {
+            const m = medicamentos.find(x => x.id === id); if(!m) return;
+            document.getElementById('med-edit-id').value = m.id;
+            document.getElementById('med-nome').value = m.nome;
+            document.getElementById('med-lote').value = m.lote;
+            document.getElementById('med-val').value = m.validade;
+            document.getElementById('med-carencia').value = m.carencia;
+            document.getElementById('med-tipo').value = m.tipo;
+            document.querySelector('#form-med button[type="submit"]').innerText = 'Salvar Alterações';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function renderizarMedicamentos() {
+            const c = document.getElementById('lista-meds-container');
+            if(!c) return; // Evita erro se a div não existir
+            c.innerHTML = medicamentos.length === 0 ? '<p style="color:var(--text-muted);text-align:center;padding:10px;">Nenhum.</p>' : 
+            medicamentos.map(m => `<div class="list-item"><div><strong>${m.nome}</strong> <span class="tag tag-warning">${m.tipo}</span><br><small style="color:var(--text-muted)">Lote: ${m.lote || '-'} | Val: ${formatDate(m.validade)}</small></div><div class="btn-group"><button class="btn-sm btn-edit" onclick="editarMed('${m.id}')">✏️</button><button class="btn-sm btn-del" onclick="pedirConfirmacao('Excluir ${m.nome}?', () => { medicamentos=medicamentos.filter(x=>x.id!=='${m.id}'); DB.set('medicamentos',medicamentos); atualizarSelectsSaude(); })">🗑️</button></div></div>`).join('');
+        }
+
         document.getElementById('form-aplicacao').addEventListener('submit', function(e) { e.preventDefault(); const m = medicamentos.find(x=>x.id===document.getElementById('app-med').value); let db = document.getElementById('app-data').value; const r = document.getElementById('app-repete').checked; const an = document.getElementById('app-animal').value; const sv = (dt, med) => { aplicacoes.push({id:Date.now().toString()+Math.random().toString(36).substr(2,5),medId:med.id,medNome:med.nome,carencia:med.carencia,animal:an,dataHora:dt,dataLiberacaoAbate:addDays(dt.split('T')[0],med.carencia),alertou:false}); }; sv(db, m); if(r){let dt=new Date(db);for(let i=1;i<=5;i++){dt.setHours(dt.getHours()+12);sv(dt.toISOString().slice(0,16),m);}} DB.set('aplicacoes',aplicacoes); this.reset(); alert('Alarme agendado!'); renderizarCarencia(); });
         function renderizarCarencia() { const c = document.getElementById('lista-carencia'); const e = aplicacoes.filter(a=>a.dataLiberacaoAbate>hoje()); c.innerHTML = e.length===0?'<p style="color:var(--text-muted);text-align:center;padding:16px;">Nenhum.</p>':`<table class="data-table"><tr><th>Animal</th><th>Med.</th><th>Livre Em</th></tr>${e.map(a=>`<tr><td>${a.animal}</td><td>${a.medNome}</td><td style="color:var(--danger);font-weight:bold">${formatDate(a.dataLiberacaoAbate)}</td></tr>`).join('')}</table>`; }
 
@@ -312,43 +413,99 @@
         document.getElementById('form-estoque-racao').addEventListener('submit', function(e) { e.preventDefault(); const s = parseInt(document.getElementById('racao-sacos').value); estoqueRacao += (s*25); DB.set('estoqueRacao',estoqueRacao); this.reset(); atualizarEstoqueRacao(); alert(`+${s*25}kg adicionados!`); });
         function calcularRacao() { const d=parseInt(document.getElementById('calc-descanso').value)||0, l=parseInt(document.getElementById('calc-lactacao').value)||0, e=parseInt(document.getElementById('calc-engorda').value)||0; const tg=(d*135)+(l*350)+(e*200), tk=(tg/1000).toFixed(1); document.getElementById('total-racao-kg').innerText=`${tk} kg`; document.getElementById('detalhe-racao').innerText=`Desc: ${(d*135/1000).toFixed(2)}kg | Lac: ${(l*350/1000).toFixed(2)}kg | Eng: ${(e*200/1000).toFixed(2)}kg`; const ad=document.getElementById('alerta-estoque-racao'); if(tg===0){ad.innerHTML='';}else{const dr=Math.floor(estoqueRacao/tk), df=addDays(hoje(),dr); let ca='var(--primary)', ta=`Estoque atual (${estoqueRacao.toFixed(1)}kg) dura <strong>${dr} dias</strong>, acabando em <strong>${formatDate(df)}</strong>.`; if(dr<=3){ca='var(--danger)';ta=`🚨 URGENTE: Acaba em ${dr} dias (${formatDate(df)}). Compre!`;}else if(dr<=7){ca='var(--warning)';ta=`⚠️ ATENÇÃO: Acaba em ${dr} dias (${formatDate(df)}).`;} ad.innerHTML=`<div style="background:#f8fafc;border-left:4px solid ${ca};padding:12px;border-radius:8px;font-size:0.9rem;">${ta}</div>`;} document.getElementById('resultado-racao').style.display='block'; }
 
-        // --- ENGORDA ---
-        document.getElementById('form-engorda').addEventListener('submit', function(e) { e.preventDefault(); lotesEngorda.push({id:Date.now().toString(),identificacao:document.getElementById('eng-id').value,qtd:parseInt(document.getElementById('eng-qtd').value),raca:document.getElementById('eng-raca').value,dataNasc:document.getElementById('eng-nasc').value,pesoInicial:parseFloat(document.getElementById('eng-peso').value)}); DB.set('lotesEngorda',lotesEngorda); this.reset(); atualizarListaEngorda(); });
-        function atualizarListaEngorda() { const c=document.getElementById('lista-engorda'), h=hoje(); if(lotesEngorda.length===0){c.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:16px;">Nenhum.</p>';return;} c.innerHTML=lotesEngorda.map(l=>{const i=Math.floor((new Date(h)-new Date(l.dataNasc))/86400000); let s=i<70?`<span class="tag tag-warning">Faltam ${70-i}d</span>`:(i<=90?`<span class="tag tag-success">JANELA ABATE</span>`:`<span class="tag" style="background:#fef2f2;color:#991b1b;">FORA (${i}d)</span>`); return `<div class="list-item" style="flex-direction:column;align-items:flex-start;margin-bottom:16px;border:1px solid var(--border);padding:12px;border-radius:8px;"><div style="display:flex;justify-content:space-between;width:100%;margin-bottom:8px;"><strong>${l.identificacao}</strong><button class="btn-danger" style="padding:4px 8px;font-size:0.75rem;width:auto;" onclick="lotesEngorda=lotesEngorda.filter(x=>x.id!=='${l.id}');DB.set('lotesEngorda',lotesEngorda);atualizarListaEngorda()">X</button></div><small style="color:var(--text-muted)">Qtd: ${l.qtd}</small><div style="margin-top:8px;font-weight:700;">Idade: ${i} dias</div><div style="margin-top:8px;">${s}</div></div>`; }).join(''); }
+        // --- ENGORDA (COM EDITAR/EXCLUIR) ---
+        document.getElementById('form-engorda').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const editId = document.getElementById('eng-edit-id').value;
+            const dados = { identificacao: document.getElementById('eng-id').value, qtd: parseInt(document.getElementById('eng-qtd').value), raca: document.getElementById('eng-raca').value, dataNasc: document.getElementById('eng-nasc').value, pesoInicial: parseFloat(document.getElementById('eng-peso').value) };
+            
+            if (editId) {
+                let idx = lotesEngorda.findIndex(l => l.id === editId);
+                if (idx !== -1) lotesEngorda[idx] = { ...lotesEngorda[idx], ...dados };
+                this.reset(); document.getElementById('eng-edit-id').value = '';
+                this.querySelector('button[type="submit"]').innerText = 'Criar Lote de Engorda';
+            } else {
+                dados.id = Date.now().toString();
+                lotesEngorda.push(dados);
+                this.reset();
+            }
+            DB.set('lotesEngorda', lotesEngorda); atualizarListaEngorda();
+        });
+
+        function editarEngorda(id) {
+            const l = lotesEngorda.find(x => x.id === id); if(!l) return;
+            document.getElementById('eng-edit-id').value = l.id;
+            document.getElementById('eng-id').value = l.identificacao;
+            document.getElementById('eng-qtd').value = l.qtd;
+            document.getElementById('eng-raca').value = l.raca;
+            document.getElementById('eng-nasc').value = l.dataNasc;
+            document.getElementById('eng-peso').value = l.pesoInicial;
+            document.querySelector('#form-engorda button[type="submit"]').innerText = 'Salvar Alterações';
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function atualizarListaEngorda() { 
+            const c=document.getElementById('lista-engorda'), h=hoje(); 
+            if(lotesEngorda.length===0){c.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:16px;">Nenhum.</p>';return;} 
+            c.innerHTML=lotesEngorda.map(l=>{const i=Math.floor((new Date(h)-new Date(l.dataNasc))/86400000); let s=i<70?`<span class="tag tag-warning">Faltam ${70-i}d</span>`:(i<=90?`<span class="tag tag-success">JANELA ABATE</span>`:`<span class="tag" style="background:#fef2f2;color:#991b1b;">FORA (${i}d)</span>`); 
+            return `<div class="list-item" style="flex-direction:column;align-items:flex-start;margin-bottom:16px;border:1px solid var(--border);padding:12px;border-radius:8px;"><div style="display:flex;justify-content:space-between;width:100%;margin-bottom:8px;"><strong>${l.identificacao}</strong></div><small style="color:var(--text-muted)">Qtd: ${l.qtd} | Peso Inic: ${l.pesoInicial}kg</small><div style="margin-top:8px;font-weight:700;">Idade: ${i} dias</div><div style="margin-top:8px;">${s}</div><div class="btn-group" style="margin-top:12px;"><button class="btn-sm btn-edit" onclick="editarEngorda('${l.id}')">✏️ Editar</button><button class="btn-sm btn-del" onclick="pedirConfirmacao('Excluir o lote ${l.identificacao}?', () => { lotesEngorda=lotesEngorda.filter(x=>x.id!=='${l.id}'); DB.set('lotesEngorda',lotesEngorda); atualizarListaEngorda(); })">🗑️ Excluir</button></div></div>`; }).join(''); 
+        }
+
+        // --- RELATÓRIO GERAL MASTER ---
+        function gerarPDFGeral() {
+            if(typeof html2pdf === 'undefined') { alert("Para usar o PDF, abra o app com internet na primeira vez para baixar o gerador. Depois funciona offline."); return; }
+            
+            const partos = coberturas.filter(c => c.dataPartoReal);
+            const tv = partos.reduce((a,c) => a+c.vivos, 0), tm = partos.reduce((a,c) => a+c.mortos, 0);
+            const tx = tv > 0 ? ((tm/(tv+tm))*100).toFixed(1) : '0.0';
+            const ec = aplicacoes.filter(a => a.dataLiberacaoAbate > hoje());
+            const d=parseInt(document.getElementById('calc-descanso').value)||0, l=parseInt(document.getElementById('calc-lactacao').value)||0, e=parseInt(document.getElementById('calc-engorda').value)||0;
+            const tg=(d*135)+(l*350)+(e*200);
+
+            let html = `<div class="pdf-content" style="font-family: Arial, sans-serif;">
+                <h1 style="color: #166534; text-align: center; border: none; margin-bottom: 5px;">CuniGestão PRO</h1>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">Relatório Geral do Plantel - Emitido em ${formatDate(hoje())}</p>
+                
+                <h2>1. Resumo do Plantel</h2>
+                <table>
+                    <tr><th>Matrizes</th><th>Machos</th><th>Em Engorda</th><th>Ninhadas Ativas</th><th>Estoque Ração</th></tr>
+                    <tr><td style="text-align:center">${animais.filter(a => a.tipo === 'Matriz').length}</td><td style="text-align:center">${animais.filter(a => a.tipo === 'Macho').length}</td><td style="text-align:center">${lotesEngorda.reduce((a, l) => a + l.qtd, 0)}</td><td style="text-align:center">${coberturas.filter(c => c.dataPartoReal && !c.desmameRealizado).length}</td><td style="text-align:center">${estoqueRacao.toFixed(1)} kg</td></tr>
+                </table>
+
+                <h2>2. Análise de Maternidade</h2>
+                <p><strong>Taxa de Mortalidade Geral:</strong> ${tx}% (Vivos: ${tv} | Mortos: ${tm})</p>
+                ${partos.length > 0 ? `<table><tr><th>Coelha</th><th>Data Parto</th><th>Vivos</th><th>Mortos</th></tr>${partos.map(c => { const n = (animais.find(a=>a.id===c.matrizId)||{}).identificacao||'-'; return `<tr><td>${n}</td><td>${formatDate(c.dataPartoReal)}</td><td>${c.vivos}</td><td>${c.mortos}</td></tr>`; }).join('')}</table>` : '<p>Nenhum parto registrado.</p>'}
+
+                <h2>3. Bloqueio de Abate (Carência)</h2>
+                ${ec.length > 0 ? `<table><tr><th>Animal/Lote</th><th>Medicamento</th><th>Liberado Em</th></tr>${ec.map(a => `<tr><td>${a.animal}</td><td>${a.medNome}</td><td style="color:red; font-weight:bold;">${formatDate(a.dataLiberacaoAbate)}</td></tr>`).join('')}</table>` : '<p>Nenhum animal em carência no momento.</p>'}
+
+                <h2>4. Consumo Diário Estimado</h2>
+                <p>Consumo total baseado no calculador: <strong>${(tg/1000).toFixed(1)} kg/dia</strong></p>
+            </div>`;
+            
+            gerarArquivoPDF(html, `Relatorio_Geral_${hoje()}.pdf`);
+        }
+
+        function gerarArquivoPDF(html,nomeArquivo){var e=document.createElement('div');e.innerHTML=html;e.style.position='absolute';e.style.left='-9999px';document.body.appendChild(e);html2pdf().set({margin:10,filename:nomeArquivo,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(e).save().then(()=>document.body.removeChild(e));}
 
         // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => { 
-            atualizarDashboard(); 
-            document.getElementById('cob-data').value = hoje(); 
-            atualizarEstoqueRacao(); 
+            atualizarDashboard(); document.getElementById('cob-data').value = hoje(); atualizarEstoqueRacao(); 
             let ag = new Date(); ag.setHours(ag.getHours()+1,0,0,0); document.getElementById('app-data').value = ag.toISOString().slice(0,16);
             
-            // Tenta registrar o Service Worker externo (Para remover ícone do Chrome se usado com servidor)
+            // Adiciona container de medicamentos oculto para lista no módulo saúde
+            const saudeCard = document.querySelector('#page-saude .card-title');
+            if(saudeCard && saudeCard.innerText === '💊 Medicamento') {
+                saudeCard.parentElement.insertAdjacentHTML('beforeend', '<div id="lista-meds-container" style="max-height: 200px; overflow-y: auto; margin-top: -8px;"></div>');
+                renderizarMedicamentos();
+            }
+
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js', { scope: './' })
-                .then(reg => { console.log('SW Registrado'); reg.update(); })
-                .catch(() => { console.log('Rodando direto do arquivo (Sem servidor). App 100% funcional via cache local.'); });
+                navigator.serviceWorker.register('./sw.js', { scope: './' }).then(reg => reg.update()).catch(() => {});
             }
         });
     </script>
 
-    <!-- Biblioteca de PDF isolada no final para nunca travar a tela se não tiver internet -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-    <script>
-        function gerarPDFMortalidade() {
-            if(typeof html2pdf === 'undefined') { alert("Para usar o PDF, abra o app com internet na primeira vez para baixar o gerador. Depois funciona offline."); return; }
-            const partos = coberturas.filter(c => c.dataPartoReal); if(partos.length === 0) { alert('Nenhum parto.'); return; }
-            const tv=partos.reduce((a,c)=>a+c.vivos,0), tm=partos.reduce((a,c)=>a+c.mortos,0), tx=((tm/(tv+tm))*100).toFixed(1);
-            let html=`<div class="pdf-content"><h2>Relatório de Mortalidade</h2><p><strong>Data:</strong> ${formatDate(hoje())} | <strong>Taxa:</strong> ${tx}%</p><table><tr><th>Coelha</th><th>Vivos</th><th>Mortos</th></tr>${partos.map(c=>{const n=(animais.find(a=>a.id===c.matrizId)||{}).identificacao||'-';return`<tr><td>${n}</td><td>${c.vivos}</td><td>${c.mortos}</td></tr>`;}).join('')}</table></div>`;
-            gerarArquivoPDF(html,`Mortalidade_${hoje()}.pdf`);
-        }
-        function gerarPDFCarencia() {
-            if(typeof html2pdf === 'undefined') { alert("Para usar o PDF, abra o app com internet na primeira vez para baixar o gerador. Depois funciona offline."); return; }
-            const ec=aplicacoes.filter(a=>a.dataLiberacaoAbate>hoje()); if(ec.length===0){alert('Nenhum animal em carência.');return;}
-            let html=`<div class="pdf-content"><h2>Carência para Abate</h2><p><strong>Data:</strong> ${formatDate(hoje())}</p><table><tr><th>Animal</th><th>Medicamento</th><th>Liberado Em</th></tr>${ec.map(a=>`<tr><td>${a.animal}</td><td>${a.medNome}</td><td style="color:red;font-weight:bold;">${formatDate(a.dataLiberacaoAbate)}</td></tr>`).join('')}</table></div>`;
-            gerarArquivoPDF(html,`Carencia_Abate_${hoje()}.pdf`);
-        }
-        function gerarArquivoPDF(html,nomeArquivo){var e=document.createElement('div');e.innerHTML=html;e.style.position='absolute';e.style.left='-9999px';document.body.appendChild(e);html2pdf().set({margin:10,filename:nomeArquivo,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(e).save().then(()=>document.body.removeChild(e));}
-    </script>
 </body>
 </html>
