@@ -1,53 +1,63 @@
-const CACHE_NAME = 'cunigestao-v2';
-const ASSETS = [
+const CACHE_NAME = 'cunigestao-v1';
+
+// Arquivos que formam a base do aplicativo offline
+const ASSETS_TO_CACHE = [
+  './',
   './index.html',
   './manifest.json'
 ];
 
-// Instalação e cacheamento imediato dos assets principais
+// 1. INSTALAÇÃO: Baixa os arquivos essenciais para funcionar offline
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
+      .then(cache => {
+        console.log('[SW] Cacheando arquivos essenciais...');
+        return cache.addAll(ASSETS_TO_CACHE);
+      })
+      .then(() => self.skipWaiting()) // Força ativação imediata
   );
 });
 
-// Ativação e limpeza de caches antigos
+// 2. ATIVAÇÃO: Limpa caches antigos e assume o controle do app
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        keys.filter(key => key !== CACHE_NAME)
-             .map(key => caches.delete(key))
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[SW] Apagando cache antigo:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// Interceptação de requisições (Estratégia Cache First para passar no teste offline)
+// 3. FETCH: Interrompe as requisições. Se tem no cache, usa ele. Se não, busca na web e salva no cache.
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
-      .then(cachedResponse => {
-        // Se está no cache, retorna o cache
-        if (cachedResponse) {
-          return cachedResponse;
+      .then(response => {
+        // Se achou no cache, retorna o cache
+        if (response) {
+          return response;
         }
-        // Se não está no cache, busca na rede
-        return fetch(event.request).then(response => {
-          // Verifica se a resposta é válida para ser cacheada
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
+        // Se não tem no cache, busca na rede
+        return fetch(event.request).then(networkResponse => {
+          // Checa se a resposta é válida para ser armazenada
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            return networkResponse;
           }
-          // Clona a resposta, salva no cache e retorna
-          var responseToCache = response.clone();
+          // Clona a resposta, salva no cache para a próxima vez e retorna a original
+          const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseToCache);
           });
-          return response;
+          return networkResponse;
         }).catch(() => {
-          // Fallback caso esteja offline e não tenha no cache (ex: requisições externas como a lib de PDF)
+          // Se falhar a rede e não tiver no cache, retorna uma página offline genérica
           return caches.match('./index.html');
         });
       })
